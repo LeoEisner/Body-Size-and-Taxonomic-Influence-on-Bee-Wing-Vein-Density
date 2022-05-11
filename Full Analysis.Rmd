@@ -1,0 +1,103 @@
+---
+title: "Full Analysis"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r} 
+#install.packages(c("ggplot2", "ggpubr", "tidyverse", "broom", "AICcmodavg"))
+library(ggplot2)
+library(ggpubr)
+library(tidyverse)
+library(broom)
+library(AICcmodavg)
+STest4 <- read.csv("Data/STest5.csv", header = TRUE, colClasses = c("factor", "factor", "factor", "numeric", "numeric", "numeric", "numeric"))
+```
+
+### Section 1 - Normal Distribution Test
+```{r}
+ratio.lm = lm(Ratio ~ IT, data=STest4)
+ratio.res = resid(ratio.lm)
+shapiro.test(ratio.res)
+```
+
+### Section 2 - Random Variance Test
+```{r}
+plot(STest4$IT, ratio.res, ylab= "Residuals", xlab = "IT Span", main = "STest4 Ratio")
+abline(0,0)
+```
+
+### Section 3 - Scatter Plot with Linear Regression (WVD vs ITS)
+```{r}
+# Basic scatter plot
+ggplot(STest4, aes(x=IT, y=Ratio)) + geom_point()
+# Change the point size, and shape
+ggplot(STest4, aes(x=IT, y=Ratio)) +
+  geom_point(size=2, shape=19, color='blue') +
+  geom_smooth(method='lm', formula = y~x, se = FALSE, color='red') + 
+  theme_bw() +
+  ggtitle("Vein Density to Intertegular Span Correlation") +
+  xlab("IT Span (mm)") +
+  ylab("Vein Area Ratio")
+  theme(plot.title=element_text(hjust=0.5))
+```
+
+### Section 4 - Boxplot (WVD vs Family)
+```{r}
+ggboxplot(STest4, x = "Family", y = "Ratio", 
+          color = "Family", palette = c("#00AFBB", "#FF0000", "#E7B800", "#00AA00", "#000000"),
+          order = c("Apidae", "Halictidae", "Colletidae", "Andrenidae", "Megachilidae"),
+          ylab = "Vein Area Ratio", xlab = "Family") +
+          ggtitle("Vein Density by Family")
+```
+
+### Section 5 - Boxplot (WVD vs Genus)
+```{r}
+ggboxplot(STest4, x = "Genus", y = "Ratio", 
+          color = "Genus", palette = c("#00AFBB", "#00AFBB", "#00AFBB", "#00AFBB", "#00AFBB", "#00AFBB", "#FF0000", "#FF0000", "#FF0000", "#FF0000", "#FF0000", "#E7B800", "#E7B800", "#00AA00", "#00AA00", "#00AA00", "#123456"),
+          order = c("Apis", "Xylocopa", "Bombus", "Ceratina", "Diadasia", "Eucera", "Agapostemon", "Halictus", "Lasioglossum", "Augochlorella", "Sphecodes", "Colletes", "Hylaeus", "Perdita", "Andrena", "Ancylandrena", "Megachile"),
+          ylab = "Vein Area Ratio", xlab = "Genus") +
+          theme(axis.text.x=element_text(angle=45, vjust=0.5, hjust = 0.5)) +
+          ggtitle("Vein Density by Genus")
+```
+
+### Section 6 - One-Way ANOVA (Species)
+```{r}
+one.way <- aov(Ratio ~ Species, data = STest4)
+summary(one.way)
+```
+
+### Section 7 - One-Way ANOVA (Genus)
+```{r}
+one.way <- aov(Ratio ~ Genus, data = STest4)
+summary(one.way)
+```
+
+### Section 8 - One-Way ANOVA (Family)
+```{r}
+one.way <- aov(Ratio ~ Family, data = STest4)
+summary(one.way)
+```
+
+### Section 9 - Two-Way ANOVA (Species and ITS)
+```{r}
+two.way <- aov(Ratio ~ Species + IT, data = STest4)
+summary(two.way)
+```
+
+### Section 10 - Two-Way ANOVA (Genus and ITS)
+```{r}
+two.way <- aov(Ratio ~ Genus + IT, data = STest4)
+summary(two.way)
+```
+
+### Section 11 - Two-Way ANOVA (Family and ITS)
+```{r}
+two.way <- aov(Ratio ~ Family + IT, data = STest4)
+summary(two.way)
+```
